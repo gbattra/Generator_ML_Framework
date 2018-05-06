@@ -1,7 +1,7 @@
 # the test process for the circle classifier
 
 from services.data_preprocessor_service import DataPreprocessorService
-from classifiers.classifier import Classifier
+from classifiers.shape_classifier import ShapeClassifier
 from models import data_model, fully_connected_layer_model, activation_layer_model
 
 
@@ -30,7 +30,7 @@ class CircleClassifierTest:
         ]
 
         # instantiate classifier model
-        classifier_model = Classifier(self.data_model, self.num_iters, layers, 0.1)
+        classifier_model = ShapeClassifier(self.data_model, self.num_iters, layers, 0.1)
 
         # train model
         classifier_model.train(classifier_model.data.x_train, classifier_model.data.y_train)

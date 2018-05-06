@@ -7,7 +7,7 @@ from helpers.prediction_helper import PredictionHelper
 from sklearn.metrics import f1_score
 
 
-class Classifier:
+class ShapeClassifier:
 
     def __init__(self,
                  data: DataModel,
