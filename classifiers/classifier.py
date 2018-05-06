@@ -27,18 +27,18 @@ class Classifier:
 
     # train model using this CNN architecture: X -> CONV -> POOL -> FC -> SOFTMAX
     def train(self, x, y):
-        self.display_data(x, y)
+        # self.display_data(x, y)
         # loop over epochs and perform gradient descent
         for epoch in range(self.epochs):
             print('Epoch: ' + str(epoch) + ' / ' + str(self.epochs))
 
             self.y_pred = self.forward_propogate(x)
-            cost = self.compute_cost(y, self.y_pred)
+            cost = self.compute_cost(y[0:500], self.y_pred)
 
             print('Cost: ' + str(cost))
             self.cost_history.append(cost)
 
-            self.backward_propogate(y)
+            self.backward_propogate(y[0:500])
 
             GradientCheckService.check_gradients(self.layers[0], self) if self.gradient_check else None
 
@@ -96,6 +96,7 @@ class Classifier:
     def display_data(x, y):
         for i, image in enumerate(x):
             plt.imshow(image)
+            plt.title(y[i])
             plt.show()
 
     def compute_f1_score(self, dataset):
@@ -112,6 +113,6 @@ class Classifier:
         output = self.forward_propogate(x)
         y_preds = PredictionHelper.predict(output)
 
-        f1score = f1_score(y_true, y_preds, average='weighted')
+        f1score = f1_score(y_true[0:500], y_preds, average='weighted')
 
         return f1score

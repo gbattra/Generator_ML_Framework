@@ -1,7 +1,7 @@
 from tests.circle_classifier_test import CircleClassifierTest
 
 
-test = CircleClassifierTest(7, 1000)
+test = CircleClassifierTest(4, 1000)
 classifier = test.run()
 train_f1 = classifier.compute_f1_score('train')
 

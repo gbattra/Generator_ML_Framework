@@ -19,8 +19,7 @@ class DataPreprocessorService:
     @staticmethod
     def load_datasets(training_phase):
         imagesets = DataPreprocessorService.load_imagesets(training_phase)
-        mirrored_imagesets = DataPreprocessorService.mirror_imagesets(imagesets)
-        imageset = DataPreprocessorService.merge_imagesets(mirrored_imagesets)
+        imageset = DataPreprocessorService.merge_imagesets(imagesets)
         shuffled_imageset = DataPreprocessorService.unison_shuffle_images_labels(imageset['x'], imageset['y'])
 
         return shuffled_imageset['x'], shuffled_imageset['y']
@@ -28,7 +27,7 @@ class DataPreprocessorService:
     @staticmethod
     def load_imagesets(data_type: str):
         imagesets = []
-        directory = 'datasets/' + data_type
+        directory = '../datasets/' + data_type
         for c, imageset in enumerate(listdir(directory)):
             c_images = []
             c_labels = []
@@ -46,28 +45,7 @@ class DataPreprocessorService:
             imagesets.append(c_image_data)
 
             # reset directory
-            directory = 'datasets/train'
-
-        return imagesets
-
-    @staticmethod
-    def mirror_imagesets(imagesets):
-        for i, imageset in enumerate(imagesets):
-            y = imageset['y']
-            x = imageset['x']
-
-            mirrored_x = []
-            mirrored_y = y
-            for image in x:
-                mirrored_x.append(np.fliplr(image))
-
-            y += mirrored_y
-            x += mirrored_x
-
-            imageset['x'] = x
-            imageset['y'] = y
-
-            imagesets[i] = imageset
+            directory = '../datasets/train'
 
         return imagesets
 
@@ -85,16 +63,15 @@ class DataPreprocessorService:
         }
 
     @staticmethod
-    def preprocess_imageset(imageset, image_size: list):
-        processed_imageset = np.zeros((len(imageset), image_size[0], image_size[1], 3))
-        for i, image in enumerate(imageset):
-            image = image[:, :, 0:3]
-            image = it.square_crop_image(image)
+    def preprocess_imagebatch(imagebatch, image_size: list):
+        processed_imagebatch = np.zeros((len(imagebatch), image_size[0], image_size[1]))
+        for i, image in enumerate(imagebatch):
+            image = image[:, :]
             image = it.resize_image(image, image_size)
 
-            processed_imageset[i, :, :, :] = image
+            processed_imagebatch[i, :, :] = image
 
-        return processed_imageset
+        return processed_imagebatch
 
     @staticmethod
     def unison_shuffle_images_labels(images: list, labels: list):
