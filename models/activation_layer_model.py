@@ -31,17 +31,27 @@ class ActivationLayerModel:
 
         return A_activated
 
-    def backward_propogate(self, grads, lamda: int):
-        dZ = grads['dZ']
-        dZ = dZ.T * self.get_derivative(self.activation, self.forward_cache['A'])
+    def backward_propogate(self, grads, lamda: int, for_generator: bool=False):
+        dZ_next = grads['dZ']
+        dZ = dZ_next.T * self.get_derivative(self.activation, self.forward_cache['A'])
 
         self.backward_cache = {
             'dZ': dZ
         }
 
+        if for_generator:
+            dZ = self.compute_shirking_component(dZ_next, dZ, 'mean')
+
         return {
             'dZ': dZ
         }
+
+    def compute_shirking_component(self, dZ_next, dZ, method: str):
+        if method == 'mean':
+            m = np.asmatrix(dZ_next.mean(axis=1))
+            dZ += m
+
+        return dZ
 
     def update_weights(self):
         return self  # activation layers have no weights to update

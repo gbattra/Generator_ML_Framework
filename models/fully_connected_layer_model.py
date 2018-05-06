@@ -1,5 +1,6 @@
 import numpy as np
 from services.weight_initializer_service import DenseNNWeightInitializerService
+from pathlib import Path
 
 
 class FullyConnectedLayerModel:
@@ -27,11 +28,17 @@ class FullyConnectedLayerModel:
         self.__load_weights()
 
     def __load_weights(self):
-        W, b = DenseNNWeightInitializerService.random_initialize_weights([self.units_in, self.units_out])
-        W = W.reshape(self.units_out, self.units_in)
-        b = b.reshape(1, self.units_out)
+        if Path('../stored/' + self.name + '_W').is_file() and Path('../stored/' + self.name + '_b').is_file():
+            W = np.loadtxt('../stored/' + self.name + '_W')
+            b = np.loadtxt('../stored/' + self.name + '_b')
+            self.W = W.reshape(self.units_out, self.units_in)
+            self.b = b.reshape(1, self.units_out)
+        else:
+            W, b = DenseNNWeightInitializerService.random_initialize_weights([self.units_in, self.units_out])
+            W = W.reshape(self.units_out, self.units_in)
+            b = b.reshape(1, self.units_out)
 
-        self.W, self.b = W, b
+            self.W, self.b = W, b
 
     def forward_propogate(self, A_prev):
         # get dims and use them to flatten A_prev
@@ -51,22 +58,22 @@ class FullyConnectedLayerModel:
 
         return a
 
-    def backward_propogate(self, grads, lamda: int):
-        dZ = grads['dZ']
+    def backward_propogate(self, grads, lamda: int, for_generator: bool=False):
+        dZ_next = grads['dZ']
         A_prev = self.forward_cache['A_prev']
         if len(A_prev.shape) > 2:
             m, n_H, n_W = self.forward_cache['A_prev'].shape
             A_prev = self.forward_cache['A_prev'].reshape(m, n_H * n_W)
         else:
             m, n = A_prev.shape
-        dW = (A_prev.T.dot(dZ)).T / m
-        dW += self.compute_gradient_regularization(self.W, lamda)
+        dW = (A_prev.T.dot(dZ_next)).T / m
+        dW += self.compute_gradient_regularization(self.W, lamda) if not for_generator else 0
 
-        db = np.sum(dZ) / m
-        db += self.compute_gradient_regularization(self.b, lamda)
+        db = np.sum(dZ_next) / m
+        db += self.compute_gradient_regularization(self.b, lamda) if not for_generator else 0
 
         # update dZ for previous layer output
-        dZ = self.W.T.dot(dZ.T)
+        dZ = self.W.T.dot(dZ_next.T)
 
         self.backward_cache = {
             'dZ': dZ,
@@ -74,13 +81,23 @@ class FullyConnectedLayerModel:
             'db': db
         }
 
+        if for_generator:
+            dZ = self.compute_shirking_component(dW, dZ, 'mean')
+
         return {
             'dZ': dZ
         }
 
+    def compute_shirking_component(self, dW, dZ, method: str):
+        if method == 'mean':
+            m = np.asmatrix(dW.mean(axis=0))
+            dZ += m.T
+
+        return dZ
+
     def update_weights(self, iteration: int):
-        update_param_W, update_param_b = self.backward_cache['dW'], self.backward_cache['db']
-        # update_param_W, update_param_b = self.compute_momentum_params(iteration)
+        # update_param_W, update_param_b = self.backward_cache['dW'], self.backward_cache['db']
+        update_param_W, update_param_b = self.compute_momentum_params(iteration)
 
         self.W -= self.alpha * update_param_W
         self.b -= self.alpha * update_param_b
@@ -90,8 +107,8 @@ class FullyConnectedLayerModel:
     def store_weights(self):
         fW = self.W.flatten()
         fb = self.b.flatten()
-        np.savetxt('stored/' + self.name + '_W', fW)
-        np.savetxt('stored/' + self.name + '_b', fb)
+        np.savetxt('../stored/' + self.name + '_W', fW)
+        np.savetxt('../stored/' + self.name + '_b', fb)
 
         return self
 

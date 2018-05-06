@@ -5,7 +5,7 @@ import numpy as np
 
 class ShapeGenerator:
 
-    def __init__(self, shape_class: list, classifier: ShapeClassifier, image_shape: list, learning_rate: float = 0.01):
+    def __init__(self, shape_class: list, classifier: ShapeClassifier, image_shape: list, learning_rate: float = 0.000001):
         self.shape_class = shape_class
         self.classifier = classifier
         self.image_shape = image_shape
@@ -23,8 +23,11 @@ class ShapeGenerator:
         for i in range(num_epochs):
             # generate initial image
             image = inputs * self.W + self.b
+            image.reshape(1, image.size)
             classifier.y_pred = classifier.forward_propogate(image)
-            grads = classifier.backward_propogate(self.shape_class)
+            grads = classifier.backward_propogate(self.shape_class, True)
+            cost = classifier.compute_cost(self.shape_class, classifier.y_pred, False)
+            print(cost)
             self.backward_propogate(inputs, grads)
             self.update_weights()
 
@@ -38,7 +41,8 @@ class ShapeGenerator:
 
     def backward_propogate(self, inputs, grads):
         dZ = grads['dZ']
-        dW = (inputs.T.dot(dZ)).T
+        dZ = dZ.reshape(150, 150)
+        dW = dZ
         db = np.sum(dZ)
 
         self.grads = {
@@ -47,3 +51,9 @@ class ShapeGenerator:
         }
 
         return self
+
+    def generate_shape(self):
+        inputs = np.ones((self.image_shape[0], self.image_shape[1]))
+        image = inputs * self.W + self.b
+
+        return image

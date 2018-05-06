@@ -44,6 +44,8 @@ class ShapeClassifier:
 
             self.update_weights(epoch + 1)  # plus 1 to avoid divide by zero in momentum
 
+        self.store_weights()
+
     def forward_propogate(self, A_prev):
         for layer in self.layers:
             A_prev = layer.forward_propogate(A_prev)
@@ -64,7 +66,7 @@ class ShapeClassifier:
 
         return reg_sum
 
-    def backward_propogate(self, y):
+    def backward_propogate(self, y, for_generator: bool=False):
         # get starting grad for y prediction
         dZ = np.subtract(self.y_pred, y)
 
@@ -76,7 +78,7 @@ class ShapeClassifier:
         self.layers[len(self.layers) - 1].backward_cache = grads
 
         for layer in reversed(self.layers[:-1]):  # skip output layer as it is computed above
-            grads = layer.backward_propogate(grads, self.lamda)
+            grads = layer.backward_propogate(grads, self.lamda, for_generator)
 
         return grads
 
