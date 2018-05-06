@@ -11,10 +11,11 @@ class ShapeGenerator:
         self.image_shape = image_shape
         self.W, self.b = DenseNNWeightInitializerService.random_initialize_weights(self.image_shape)
         self.learning_rate = learning_rate
+        self.grads = {}
 
     def train(self, num_epochs):
         # starting image matrix
-        inputs = np.ones((self.image_shape[0], self.image_shape[1]))
+        inputs = np.ones((1, self.image_shape[0], self.image_shape[1]))
 
         # get classifier
         classifier = self.classifier
@@ -24,12 +25,25 @@ class ShapeGenerator:
             image = inputs * self.W + self.b
             classifier.y_pred = classifier.forward_propogate(image)
             grads = classifier.backward_propogate(self.shape_class)
-            self.update_weights(grads)
+            self.backward_propogate(inputs, grads)
+            self.update_weights()
 
-    def update_weights(self, grads):
-        update_param_W, update_param_b = grads['dW'], grads['db']
+    def update_weights(self):
+        update_param_W, update_param_b = self.grads['dW'], self.grads['db']
 
         self.W -= self.learning_rate * update_param_W
         self.b -= self.learning_rate * update_param_b
+
+        return self
+
+    def backward_propogate(self, inputs, grads):
+        dZ = grads['dZ']
+        dW = (inputs.T.dot(dZ)).T
+        db = np.sum(dZ)
+
+        self.grads = {
+            'dW': dW,
+            'db': db
+        }
 
         return self

@@ -66,8 +66,6 @@ class FullyConnectedLayerModel:
         db += self.compute_gradient_regularization(self.b, lamda)
 
         # update dZ for previous layer output
-        print(self.W.shape)
-        print(dZ.shape)
         dZ = self.W.T.dot(dZ.T)
 
         self.backward_cache = {
