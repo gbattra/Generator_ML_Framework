@@ -12,12 +12,12 @@ class CircleClassifierTest:
         self.num_classes = num_classes
 
         data = DataPreprocessorService.load_data()
-        self.data_model = data_model.DataModel(data, num_classes, [150, 150])
-        self.learning_rate = 0.01
+        self.data_model = data_model.DataModel(data, num_classes)
+        self.learning_rate = 0.1
 
     def run(self):
         fc_layer_1 = fully_connected_layer_model.FullyConnectedLayerModel(22500, 10, 'fc1', self.learning_rate)
-        activation_layer_1 = activation_layer_model.ActivationLayerModel('relu', 'output_activation')
+        activation_layer_1 = activation_layer_model.ActivationLayerModel('tanh', 'output_activation')
         output_fc = fully_connected_layer_model.FullyConnectedLayerModel(10, self.num_classes, 'fc2', self.learning_rate)
         output_activation = activation_layer_model.ActivationLayerModel('softmax', 'output_activation')
 

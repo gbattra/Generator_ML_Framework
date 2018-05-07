@@ -66,11 +66,12 @@ class FullyConnectedLayerModel:
             A_prev = self.forward_cache['A_prev'].reshape(m, n_H * n_W)
         else:
             m, n = A_prev.shape
+
         dW = (A_prev.T.dot(dZ_next)).T / m
-        dW += self.compute_gradient_regularization(self.W, lamda) if not for_generator else 0
+        dW += self.compute_gradient_regularization(self.W, lamda, m) if not for_generator else 0
 
         db = np.sum(dZ_next) / m
-        db += self.compute_gradient_regularization(self.b, lamda) if not for_generator else 0
+        db += self.compute_gradient_regularization(self.b, lamda, m) if not for_generator else 0
 
         # update dZ for previous layer output
         dZ = self.W.T.dot(dZ_next.T)
@@ -96,8 +97,8 @@ class FullyConnectedLayerModel:
         return dZ
 
     def update_weights(self, iteration: int):
-        # update_param_W, update_param_b = self.backward_cache['dW'], self.backward_cache['db']
-        update_param_W, update_param_b = self.compute_momentum_params(iteration)
+        update_param_W, update_param_b = self.backward_cache['dW'], self.backward_cache['db']
+        # update_param_W, update_param_b = self.compute_momentum_params(iteration)
 
         self.W -= self.alpha * update_param_W
         self.b -= self.alpha * update_param_b
@@ -128,10 +129,13 @@ class FullyConnectedLayerModel:
     def compute_cost_regularization(self, lamda: int):
         m = self.forward_cache['A_prev'].shape[0]
         frob_norm = np.sum(np.square(self.W))
+        if m > 0:
+            return (lamda / (2 * m)) * frob_norm
+        else:
+            return 0
 
-        return (lamda / (2 * m)) * frob_norm
-
-    def compute_gradient_regularization(self, weights, lamda: int):
-        m = self.forward_cache['A_prev'].shape[0]
-
-        return (lamda / m) * weights
+    def compute_gradient_regularization(self, weights, lamda: int, m: int):
+        if m > 0:
+            return (lamda / m) * weights
+        else:
+            return 0

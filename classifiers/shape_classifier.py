@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from services.gradient_check_service import GradientCheckService
 from helpers.prediction_helper import PredictionHelper
 from sklearn.metrics import f1_score
+from services.data_preprocessor_service import DataPreprocessorService as dps
 
 
 class ShapeClassifier:
@@ -14,9 +15,11 @@ class ShapeClassifier:
                  epochs: int,
                  layers: list,
                  lamda: float,
+                 batch_size: int = 500,
                  gradient_check: bool = False
                  ):
         self.data = data
+        self.batch_size = batch_size
         self.epochs = epochs
         self.layers = layers
         self.prediction = None
@@ -30,19 +33,24 @@ class ShapeClassifier:
         # self.display_data(x, y)
         # loop over epochs and perform gradient descent
         for epoch in range(self.epochs):
-            print('Epoch: ' + str(epoch) + ' / ' + str(self.epochs))
+            print('Epoch: ' + str(epoch))
+            for i in range(int(np.floor(y.shape[0] / self.batch_size))):
+                index = i * self.batch_size
+                offset = index + self.batch_size
+                x_batch = dps.preprocess_imagebatch(self.data.x_train[index:offset], [150, 150])
+                print('Batch: ' + str(i))
 
-            self.y_pred = self.forward_propogate(x)
-            cost = self.compute_cost(y[0:500], self.y_pred)
+                self.y_pred = self.forward_propogate(x_batch)
+                cost = self.compute_cost(y[index:offset], self.y_pred)
 
-            print('Cost: ' + str(cost))
-            self.cost_history.append(cost)
+                print('Cost: ' + str(cost))
+                self.cost_history.append(cost)
 
-            self.backward_propogate(y[0:500])
+                self.backward_propogate(y[index:offset])
 
-            GradientCheckService.check_gradients(self.layers[0], self) if self.gradient_check else None
+                GradientCheckService.check_gradients(self.layers[0], self) if self.gradient_check else None
 
-            self.update_weights(epoch + 1)  # plus 1 to avoid divide by zero in momentum
+                self.update_weights(epoch + 1)  # plus 1 to avoid divide by zero in momentum
 
         self.store_weights()
 
@@ -54,7 +62,7 @@ class ShapeClassifier:
 
     def compute_cost(self, y, y_prediction, regularization: bool = True):
         m = y.shape[0]
-        cost = -(np.sum(y * np.log(y_prediction + 0.001) + (1 - y) * np.log(1 - y_prediction))) / m
+        cost = -(np.sum(y * np.log(y_prediction) + (1 - y) * np.log(1 - y_prediction))) / m
         cost += self.compute_cost_regularization() if regularization else 0
         return cost
 
