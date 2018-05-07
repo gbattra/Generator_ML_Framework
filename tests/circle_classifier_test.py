@@ -33,6 +33,6 @@ class CircleClassifierTest:
         classifier_model = ShapeClassifier(self.data_model, self.num_iters, layers, 0.1)
 
         # train model
-        # classifier_model.train(classifier_model.data.x_train, classifier_model.data.y_train)
+        classifier_model.train(classifier_model.data.x_train, classifier_model.data.y_train)
 
         return classifier_model

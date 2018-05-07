@@ -82,13 +82,13 @@ class FullyConnectedLayerModel:
         }
 
         if for_generator:
-            dZ = self.compute_shirking_component(dW, dZ, 'mean')
+            dZ = self.compute_shirking_gradient(dW, dZ, 'mean')
 
         return {
             'dZ': dZ
         }
 
-    def compute_shirking_component(self, dW, dZ, method: str):
+    def compute_shirking_gradient(self, dW, dZ, method: str):
         if method == 'mean':
             m = np.asmatrix(dW.mean(axis=0))
             dZ += m.T

@@ -40,13 +40,23 @@ class ActivationLayerModel:
         }
 
         if for_generator:
-            dZ = self.compute_shirking_component(dZ_next, dZ, 'mean')
+            dZ = self.compute_shirking_gradient(dZ_next, dZ, 'mean')
 
         return {
             'dZ': dZ
         }
 
-    def compute_shirking_component(self, dZ_next, dZ, method: str):
+    def get_derivative(self, activation_function, x):
+        if activation_function == 'softmax':
+            return self.softmax_derivative(x)
+        elif activation_function == 'relu':
+            return self.relu_derivative(x)
+        elif activation_function == 'sigmoid':
+            return self.sigmoid_derivative(x)
+        elif activation_function == 'tanh':
+            return self.tanh_derivative(x)
+
+    def compute_shirking_gradient(self, dZ_next, dZ, method: str):
         if method == 'mean':
             m = np.asmatrix(dZ_next.mean(axis=1))
             dZ += m
@@ -58,6 +68,10 @@ class ActivationLayerModel:
 
     def store_weights(self):
         return self  # no weights to save
+
+    @staticmethod
+    def tanh_derivative(x):
+        return 1.0 - np.tanh(x) ** 2
 
     @staticmethod
     def relu_activation(x):
@@ -76,12 +90,6 @@ class ActivationLayerModel:
         e_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
         return e_x / np.sum(e_x, axis=-1, keepdims=True)
 
-    def get_derivative(self, activation_function, x):
-        if activation_function == 'softmax':
-            return self.softmax_derivative(x)
-        elif activation_function == 'relu':
-            return self.relu_derivative(x)
-
     @staticmethod
     def softmax_derivative(x):
         s = x.reshape(-1, 1)
@@ -92,3 +100,7 @@ class ActivationLayerModel:
         x[x <= 0] = 0
         x[x > 0] = 1
         return x
+
+    @staticmethod
+    def sigmoid_derivative(x):
+        return x * (1 - x)
