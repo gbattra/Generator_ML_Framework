@@ -11,7 +11,7 @@ class ShapeGenerator:
                  classifier: ShapeClassifier,
                  activation: ActivationLayerModel,
                  image_shape: list,
-                 learning_rate: float = 0.0000001):
+                 learning_rate: float = 0.001):
         self.shape_class = shape_class
         self.classifier = classifier
         self.activation = activation
@@ -40,9 +40,9 @@ class ShapeGenerator:
     def forward_propogate(self, inputs):
         image = inputs * self.W + self.b
         image = image.reshape(1, image.size)
-        A1 = self.activation.forward_propogate(image)
+        # A1 = self.activation.forward_propogate(image)
 
-        return A1
+        return image
 
     def update_weights(self):
         update_param_W, update_param_b = self.grads['dW'], self.grads['db']
@@ -53,9 +53,9 @@ class ShapeGenerator:
         return self
 
     def backward_propogate(self, inputs, grads):
-        grads = self.activation.backward_propogate(grads, 0, True)
+        # grads = self.activation.backward_propogate(grads, 0, True)
         dZ = grads['dZ']
-        dZ = dZ.reshape(150, 150)
+        dZ = dZ.reshape(100, 100)
         dW = dZ
         db = np.sum(dZ)
 
