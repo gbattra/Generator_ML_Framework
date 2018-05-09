@@ -14,24 +14,24 @@ class CircleClassifierTest:
 
         data = DataPreprocessorService.load_data()
         self.data_model = data_model.DataModel(data, num_classes)
-        self.learning_rate = 0.01
+        self.learning_rate = 0.1
 
     def run(self):
-        conv_filter_1 = CONVFilterModel(4, 3, 8)
-        conv_layer_1 = CONVLayerModel(conv_filter_1, [2, 2], 'same', 'tanh_1')
+        conv_filter_1 = CONVFilterModel(4, 1, 8)
+        conv_layer_1 = CONVLayerModel(conv_filter_1, [2, 2], 'same', 'conv_1')
         # relu layer 1
-        tanh_layer_1 = activation_layer_model.ActivationLayerModel('tanh', 'tanh_1')
+        tanh_layer_1 = activation_layer_model.ActivationLayerModel('relu', 'cnn_1_activation')
 
-        fc_layer_1 = fully_connected_layer_model.FullyConnectedLayerModel(10000, 10, 'fc1', self.learning_rate)
-        activation_layer_1 = activation_layer_model.ActivationLayerModel('relu', 'output_activation')
+        fc_layer_1 = fully_connected_layer_model.FullyConnectedLayerModel(19208, 15, 'fc1', self.learning_rate)
+        activation_layer_1 = activation_layer_model.ActivationLayerModel('relu', 'relu_2')
 
-        output_fc = fully_connected_layer_model.FullyConnectedLayerModel(10, self.num_classes, 'fc2', self.learning_rate)
+        output_fc = fully_connected_layer_model.FullyConnectedLayerModel(15, self.num_classes, 'fc2', self.learning_rate)
         output_activation = activation_layer_model.ActivationLayerModel('softmax', 'output_activation')
 
         # layers list
         layers = [
-            # conv_layer_1,
-            # tanh_layer_1,
+            conv_layer_1,
+            tanh_layer_1,
             fc_layer_1,
             activation_layer_1,
             output_fc,
@@ -42,6 +42,6 @@ class CircleClassifierTest:
         classifier_model = ShapeClassifier(self.data_model, self.num_iters, layers, 0.1)
 
         # train model
-        # classifier_model.train(classifier_model.data.x_train, classifier_model.data.y_train)
+        classifier_model.train(classifier_model.data.x_train, classifier_model.data.y_train)
 
         return classifier_model

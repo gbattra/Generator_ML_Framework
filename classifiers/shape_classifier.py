@@ -15,7 +15,7 @@ class ShapeClassifier:
                  epochs: int,
                  layers: list,
                  lamda: float,
-                 batch_size: int = 500,
+                 batch_size: int = 20,
                  gradient_check: bool = False
                  ):
         self.data = data
@@ -37,7 +37,7 @@ class ShapeClassifier:
             for i in range(int(np.floor(y.shape[0] / self.batch_size))):
                 index = i * self.batch_size
                 offset = index + self.batch_size
-                x_batch = dps.preprocess_imagebatch(self.data.x_train[index:offset], [150, 150])
+                x_batch = dps.preprocess_imagebatch(self.data.x_train[index:offset], [100, 100])
                 print('Batch: ' + str(i))
 
                 self.y_pred = self.forward_propogate(x_batch)
@@ -60,7 +60,7 @@ class ShapeClassifier:
 
         return A_prev
 
-    def compute_cost(self, y, y_prediction, regularization: bool = True):
+    def compute_cost(self, y, y_prediction, regularization: bool = False):
         m = y.shape[0]
         cost = -(np.sum(y * np.log(y_prediction) + (1 - y) * np.log(1 - y_prediction))) / m
         cost += self.compute_cost_regularization() if regularization else 0
@@ -86,6 +86,7 @@ class ShapeClassifier:
         self.layers[len(self.layers) - 1].backward_cache = grads
 
         for layer in reversed(self.layers[:-1]):  # skip output layer as it is computed above
+            print(layer.name)
             grads = layer.backward_propogate(grads, self.lamda, for_generator)
 
         return grads
@@ -120,7 +121,8 @@ class ShapeClassifier:
             x = self.data.x_test
             y_true = np.argmax(self.data.y_test, axis=1)
 
-        output = self.forward_propogate(x)
+        x_batch = dps.preprocess_imagebatch(self.data.x_train[0:500], [100, 100])
+        output = self.forward_propogate(x_batch)
         y_preds = PredictionHelper.predict(output)
 
         f1score = f1_score(y_true[0:500], y_preds, average='weighted')

@@ -41,7 +41,7 @@ class CONVLayerModel:
 
     def forward_propogate(self, A_prev):
         # get dims from a and weight shapes
-        m, n_H_prev, n_W_prev = A_prev.shape
+        m, n_H_prev, n_W_prev, n_C_prev = A_prev.shape
         f, f, n_C_prev, n_C = self.W.shape
 
         # get height and width of output
@@ -53,12 +53,11 @@ class CONVLayerModel:
         # pad a_prev with zeros
         pad = self.get_pad_size()
         stride = self.get_stride_size()
-        A_prev_pad = it.zero_pad(A_prev, pad_size=pad, is_batch=True)
 
         # loop over the batch of training examples
         for i in range(m):
             # select ith training example
-            a_prev_pad = A_prev_pad[i]
+            a_prev_pad = A_prev[i]
             # loop over the vertical axis of the training example
             for h in range(n_H):
                 # loop over horizontal axis of training example
