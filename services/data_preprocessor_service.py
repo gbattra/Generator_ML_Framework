@@ -71,7 +71,7 @@ class DataPreprocessorService:
 
             processed_imagebatch[i, :, :] = image
 
-        return processed_imagebatch
+        return processed_imagebatch.reshape(processed_imagebatch.shape[0], processed_imagebatch.shape[1], processed_imagebatch.shape[2], 1)
 
     @staticmethod
     def unison_shuffle_images_labels(images: list, labels: list):

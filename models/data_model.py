@@ -1,6 +1,5 @@
 # model structure for the data to pass to classifier
 from services.data_preprocessor_service import DataPreprocessorService as dps
-import numpy as np
 
 
 class DataModel:

@@ -43,10 +43,12 @@ class FullyConnectedLayerModel:
     def forward_propogate(self, A_prev):
         # get dims and use them to flatten A_prev
         if len(A_prev.shape) > 2:
-            m, n_H, n_W = A_prev.shape
-            A_prev = A_prev.reshape(m, n_H * n_W)
+            m, n_H, n_W, n_C = A_prev.shape
+            A_prev_reshaped = A_prev.reshape(m, n_H * n_W * n_C)
+        else:
+            A_prev_reshaped = A_prev
 
-        a = A_prev.dot(self.W.T)
+        a = A_prev_reshaped.dot(self.W.T)
         a += self.b
 
         self.forward_cache = {
@@ -62,8 +64,8 @@ class FullyConnectedLayerModel:
         dZ_next = grads['dZ']
         A_prev = self.forward_cache['A_prev']
         if len(A_prev.shape) > 2:
-            m, n_H, n_W = self.forward_cache['A_prev'].shape
-            A_prev = self.forward_cache['A_prev'].reshape(m, n_H * n_W)
+            m, n_H, n_W, n_C = self.forward_cache['A_prev'].shape
+            A_prev = self.forward_cache['A_prev'].reshape(m, n_H * n_W * n_C)
         else:
             m, n = A_prev.shape
 
