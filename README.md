@@ -9,4 +9,6 @@
   <li>Eventually, it will output it's own circle, one that it drew from the distribution of circle images it was trained on</li>
 </ol>
 
+It accomplishes this through standard backpropogation, but instead of applying the gradients at each layer, those gradients are "shirked" up to the layer above until reaching the input layer, where the gradients are finally applied. The final input values result in a fuzzy image of the target class.
+
 <img src="https://portfolio-attra.herokuapp.com/assets/images/circle.jpg"/>
