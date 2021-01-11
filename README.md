@@ -8,3 +8,5 @@
   <li>Then train the generator by running `run_generator_test.py`</li>
   <li>Eventually, it will output it's own circle, one that it drew from the distribution of circle images it was trained on</li>
 </ol>
+
+<img src="https://portfolio-attra.herokuapp.com/assets/images/circle.jpg"/>
